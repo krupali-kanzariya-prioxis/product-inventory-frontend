@@ -50,19 +50,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute("data-theme", initialTheme);
   }, []);
 
-  // useEffect(() => {
-  //   const onInventoryChanged = () => {
-  //     fetchLowStock();
-  //   };
+  useEffect(() => {
+    const onInventoryChanged = () => {
+      fetchLowStock();
+    };
 
-  //   window.addEventListener("inventory:changed", onInventoryChanged);
-  //   const timer = window.setInterval(fetchLowStock, 6000000000000);
+    window.addEventListener("inventory:changed", onInventoryChanged);
+    const timer = window.setInterval(fetchLowStock, 60000);
 
-  //   return () => {
-  //     window.removeEventListener("inventory:changed", onInventoryChanged);
-  //     window.clearInterval(timer);
-  //   };
-  // }, [fetchLowStock]);
+    return () => {
+      window.removeEventListener("inventory:changed", onInventoryChanged);
+      window.clearInterval(timer);
+    };
+  }, [fetchLowStock]);
 
   useEffect(() => {
     if (!notificationOpen) return;

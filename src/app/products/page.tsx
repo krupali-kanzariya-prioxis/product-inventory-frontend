@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Search, Download, Eye, History, Copy, PackagePlus, PackageMinus } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Download, Eye, History, Copy, PackagePlus, PackageMinus, MoreVertical } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   apiGet,
@@ -76,6 +76,9 @@ export default function ProductsPage() {
   const [deleteSid, setDeleteSid] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Row action menu
+  const [openMenuSid, setOpenMenuSid] = useState<string | null>(null);
+
   // Quick stock adjust
   const [quickStockOpen, setQuickStockOpen] = useState(false);
   const [quickStockProduct, setQuickStockProduct] = useState<ProductResponseModel | null>(null);
@@ -84,9 +87,19 @@ export default function ProductsPage() {
   const [quickStockNotes, setQuickStockNotes] = useState("");
   const [quickStockSaving, setQuickStockSaving] = useState(false);
 
+  // Close menu on outside click
+  useEffect(() => {
+    if (!openMenuSid) return;
+    function handler(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".action-menu-wrap")) setOpenMenuSid(null);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuSid]);
+
   const fetchDropdowns = useCallback(async () => {
     try {
-      debugger
       const [cats, sups] = await Promise.all([
         apiGet<SelectListItem[]>(API_ENDPOINTS.CATEGORIES.DDL),
         apiGet<SelectListItem[]>(API_ENDPOINTS.SUPPLIERS.DDL),
@@ -94,7 +107,7 @@ export default function ProductsPage() {
       setCategories(cats || []);
       setSuppliers(sups || []);
     } catch {
-      // ignore
+      console.error("Failed to load dropdown data");
     }
   }, []);
 
@@ -401,21 +414,36 @@ export default function ProductsPage() {
                     <button className="btn btn-ghost btn-icon-view" title="View Details" onClick={() => openDetail(r.productSid)}>
                       <Eye size={16} />
                     </button>
-                    <button className="btn btn-ghost" style={{ color: "var(--color-success)" }} title="Quick Stock In" onClick={() => openQuickStock(r, "IN")}>
-                      <PackagePlus size={16} />
-                    </button>
-                    <button className="btn btn-ghost" style={{ color: "var(--color-warning)" }} title="Quick Stock Out" onClick={() => openQuickStock(r, "OUT")}>
-                      <PackageMinus size={16} />
-                    </button>
-                    <button className="btn btn-ghost btn-icon-view" title="Stock History" onClick={() => openHistory(r)}>
-                      <History size={16} />
-                    </button>
                     <button className="btn btn-ghost btn-icon-edit" title="Edit" onClick={() => openEdit(r.productSid)}>
                       <Pencil size={16} />
                     </button>
-                    <button className="btn btn-ghost btn-icon-delete" title="Delete" onClick={() => { setDeleteSid(r.productSid); setDeleteOpen(true); }}>
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="action-menu-wrap">
+                      <button
+                        className="action-menu-trigger"
+                        title="More actions"
+                        onClick={() => setOpenMenuSid(openMenuSid === r.productSid ? null : r.productSid)}
+                      >
+                        <MoreVertical size={15} />
+                      </button>
+                      {openMenuSid === r.productSid && (
+                        <div className="action-menu-dropdown">
+                          <button className="action-menu-item action-menu-stock-in" onClick={() => { setOpenMenuSid(null); openQuickStock(r, "IN"); }}>
+                            <PackagePlus size={14} /> Quick Stock In
+                          </button>
+                          <button className="action-menu-item action-menu-stock-out" onClick={() => { setOpenMenuSid(null); openQuickStock(r, "OUT"); }}>
+                            <PackageMinus size={14} /> Quick Stock Out
+                          </button>
+                          <hr className="action-menu-divider" />
+                          <button className="action-menu-item" onClick={() => { setOpenMenuSid(null); openHistory(r); }}>
+                            <History size={14} /> Stock History
+                          </button>
+                          <hr className="action-menu-divider" />
+                          <button className="action-menu-item action-menu-danger" onClick={() => { setOpenMenuSid(null); setDeleteSid(r.productSid); setDeleteOpen(true); }}>
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))

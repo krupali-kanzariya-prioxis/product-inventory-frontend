@@ -60,7 +60,7 @@ export default function StockTransactionsPage() {
       const data = await apiGet<SelectListItem[]>(API_ENDPOINTS.PRODUCTS.DDL);
       setProducts(data || []);
     } catch {
-      // ignore
+      console.error("Failed to load products for dropdown");
     }
   }, []);
 
@@ -68,7 +68,7 @@ export default function StockTransactionsPage() {
     try {
       const filters: FilterParam[] = [];
       if (filterType) {
-        filters.push({ key: "ST.TransactionType", condition: "=", value: filterType });
+        filters.push({ key: "TransactionType", condition: "=", value: filterType });
       }
 
       const params = buildListQuery({
