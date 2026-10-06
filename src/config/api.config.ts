@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7152";
+  process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const API_ENDPOINTS = {
   PRODUCTS: {
@@ -10,6 +10,8 @@ export const API_ENDPOINTS = {
     DELETE: (sid: string) => `/api/products/${sid}`,
     LOW_STOCK: "/api/products/LowStock",
     DDL: "/api/products/DDLProduct",
+    FORECAST: (sid: string, leadTimeDays: number, safetyStockDays: number) =>
+      `/api/products/${sid}/forecast?leadTimeDays=${leadTimeDays}&safetyStockDays=${safetyStockDays}`,
   },
   CATEGORIES: {
     LIST: "/api/categories",

@@ -22,7 +22,7 @@ interface ReportStats {
   totalProducts: number;
   highValueProducts: ProductResponseModel[];
   categoryValue: { name: string; value: number; fill: string }[];
-  supplierValue: { name: string; value: number; count: number }[];
+  supplierValue: { name: string; value: number; count: number; fill: string }[];
   stockTurnoverByMonth: { month: string; value: number }[];
 }
 
@@ -122,10 +122,11 @@ export default function InventoryReportPage() {
       });
 
       const supplierValue = Array.from(supplierValueMap.entries())
-        .map(([name, { value, count }]) => ({
+        .map(([name, { value, count }], i) => ({
           name: name.length > 20 ? name.slice(0, 20) + "..." : name,
           value: Math.round(value),
           count,
+          fill: CHART_COLORS[i % CHART_COLORS.length],
         }))
         .sort((a, b) => b.value - a.value)
         .slice(0, 10);
@@ -267,7 +268,11 @@ export default function InventoryReportPage() {
                   color: "var(--color-text)",
                 }}
               />
-              <Bar dataKey="value" fill="#3F4674" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {(stats.supplierValue || []).map((entry, i) => (
+                  <Cell key={`cell-${i}`} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -291,9 +296,9 @@ export default function InventoryReportPage() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#3F4674"
+                stroke="#c8d4d5"
                 strokeWidth={2}
-                dot={{ fill: "#3F4674", r: 4 }}
+                dot={{ fill: "#c8d4d5", r: 4 }}
                 activeDot={{ r: 5 }}
                 connectNulls
               />
